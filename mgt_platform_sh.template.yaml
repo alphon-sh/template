@@ -1,0 +1,118 @@
+## Project behavior schema
+
+# Allows products and project creation to define
+# various settings and workflow modifications
+
+# The schema is versioned so that we can establish code paths differently in the future if we need to change this.
+version: 1
+
+# Templates are a small amount of information supporting a template URL. Each template is selectable at the project-creation step.
+info:
+  # Unique machine name, prefaced by a vendor or organization identifier
+  id: platformsh/magento1
+  # The human-readable name of the template.
+  name: Magento 1
+  # Human-readable descriptive text for the template. Supports limited HTML.
+  description: Starter kit for Magento 1 Community Edition.
+  # A list of tags associated with the template.
+  tags:
+  - PHP
+  - Magento
+  - CMS
+  # An image URI (either base64-encoded or a URL) representing the template.
+  image: <some image uri>
+
+
+# This key describes the initialization call made to the master environment at
+# project creation time. This is part of the full v2 UI operation mode, which
+# places project schema/options selection early in the creation process, rather
+# than later as it exitss now. To allow this schema to be backwards-compatible,
+# this key also gets mapped to the appropriate location in project.settings so
+# that the current UI can have its own workflow overridden as well.
+initialize:
+  repository: git://github.com/platformsh/platformsh-example-magento1.git@master
+  config: null
+  files: []
+
+# This key allows users to set the default values for various project API calls,
+# including project settings, variables, and access control. These are populated
+# by the Accounts provisioning process immediately after project creation.
+defaults:
+  # This key is used to set admin-level settings from
+  # Accounts at project creation.
+  settings:
+    use_drupal_defaults: FALSE
+    enable_certificate_provisioning: FALSE
+  # This key creates variables at the project level.
+  variables:
+    - name: env:COMPOSER_AUTH
+      value: ""
+      is_json: false
+      visible_build: true
+      visible_runtime: false
+    - name: drupal7:site_name
+      value: "Hello, world!"
+      is_json: false
+      visible_build: false
+      visible_runtime: true
+  # A list of UUIDs and access levels for the project
+  access:
+    - user: [UUID HERE]
+      role: admin
+    - user: [UUID HERE]
+      role: viewer
+    - email: [EMAIL HERE]
+      role: admin
+    - user: [UUID HERE]
+      roles:
+        prod: reader
+        test: contributor
+        dev: admin
+
+## We intend to allow this schema to enforce the same keys at synchronization
+## time, but this is NYI.
+## enforced:
+##   settings:
+##   variables:
+##   access:
+# An object allowing us to determine which regions are accessible.
+
+regions:
+  # Removes regions from the list and blocks them from being used for
+  # this project.
+  exclude:
+    - us-2.platform.sh
+    - au.platform.sh
+    - eu-2.platform.sh
+    - nl-1.platform.sh
+  # This adds regions not in the default list, making them
+  # accessible to the user for this project/checkout.
+  additional:
+    - bc.platform.sh
+  # This key overrides the list provided by the defaults + the additional key,
+  # but does not permit access to any excluded regions. For this key, the last
+  # implementation of this key will "win" (i.e. the project level will supersede
+  # the vendor level if this key is present.)
+  only:
+    - us.platform.sh
+    - eu.platform.sh
+
+## Sets the available plans in the same way:
+plans:
+  # Removes plans from the list and bloceks them from being used for this
+  # project.
+  exclude:
+    - development
+    - small
+  # This adds regions not in the default list, making them
+  # accessible to the user for this project/checkout.
+  additional:
+    - 2xlarge
+    - xlarge
+  # This key overrides the list provided by the defaults + the additional key,
+  # but does not permit access to any excluded plans. For this key, the last
+  # implementation of this key will "win" (i.e. the project level will supersede
+  # the vendor level if this key is present.)
+  only:
+    - magento/2xlarge
+    - magento/xlarge
